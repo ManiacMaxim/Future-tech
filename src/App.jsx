@@ -1,12 +1,13 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { pageLoaders } from "./routing";
 
-const HomePage = lazy(() => import("./pages/HomePage"));
-const NewsPage = lazy(() => import("./pages/NewsPage"));
-const PodcastsPage = lazy(() => import("./pages/PodcastsPage"));
-const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
-const BlogPage = lazy(() => import("./pages/BlogPage"));
-const ContactsPage = lazy(() => import("./pages/ContactsPage"));
+const HomePage = lazy(pageLoaders.home);
+const NewsPage = lazy(pageLoaders.news);
+const PodcastsPage = lazy(pageLoaders.podcasts);
+const ResourcesPage = lazy(pageLoaders.resources);
+const BlogPage = lazy(pageLoaders.blog);
+const ContactsPage = lazy(pageLoaders.contacts);
 
 const pages = [
   { paths: ["/", "/index.html"], Component: HomePage },

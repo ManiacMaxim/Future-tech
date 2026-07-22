@@ -1,5 +1,5 @@
-import parse from "html-react-parser";
+import { parseOptimizedMarkup } from "./createParseOptions";
 
 export default function Header({ markup }) {
-  return parse(markup);
+  return parseOptimizedMarkup(markup, { eagerImageCount: 1 });
 }

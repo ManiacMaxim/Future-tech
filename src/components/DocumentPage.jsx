@@ -12,7 +12,7 @@ const extract = (document, tag) =>
 const extractTitle = (document) =>
   document.match(/<title>(.*?)<\/title>/i)?.[1] ?? "Future Tech";
 
-export default function DocumentPage({ htmlDocument }) {
+export default function DocumentPage({ htmlDocument, eagerImageCount = 0 }) {
   const page = useMemo(
     () => ({
       title: extractTitle(htmlDocument),
@@ -32,7 +32,7 @@ export default function DocumentPage({ htmlDocument }) {
   return (
     <>
       <Header markup={page.header} />
-      <PageContent markup={page.main} />
+      <PageContent markup={page.main} eagerImageCount={eagerImageCount} />
       <Footer markup={page.footer} />
     </>
   );

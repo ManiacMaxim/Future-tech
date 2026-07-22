@@ -27,4 +27,10 @@ export default [
       "no-unused-vars": "off",
     },
   },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ];

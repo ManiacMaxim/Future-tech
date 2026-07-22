@@ -1,5 +1,8 @@
-import { useEffect } from "react";
-import IMask from "imask";
+import { startTransition, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { resolveInternalRoute } from "../routing";
+
+const prefetchedRoutes = new Set();
 
 const toggleTabs = (button) => {
   const tabs = button.closest("[data-js-tabs]");
@@ -22,7 +25,13 @@ const toggleTabs = (button) => {
 };
 
 export default function usePageInteractions() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
+    let masks = [];
+    let isDisposed = false;
+
     document.querySelectorAll("[data-js-tabs]").forEach((tabs) => {
       const activeButton = tabs.querySelector(
         "[data-js-tabs-button].is-active",
@@ -30,11 +39,40 @@ export default function usePageInteractions() {
       if (activeButton) toggleTabs(activeButton);
     });
 
-    const masks = [...document.querySelectorAll("[data-js-input-mask]")].map(
-      (input) => IMask(input, { mask: input.dataset.jsInputMask }),
-    );
+    const maskInputs = [...document.querySelectorAll("[data-js-input-mask]")];
+    if (maskInputs.length > 0) {
+      void import("imask").then(({ default: IMask }) => {
+        if (isDisposed) return;
+        masks = maskInputs.map((input) =>
+          IMask(input, { mask: input.dataset.jsInputMask }),
+        );
+      });
+    }
 
     const onClick = (event) => {
+      const link = event.target.closest("a[href]");
+      const route = link
+        ? resolveInternalRoute(link.getAttribute("href"))
+        : null;
+      const isPlainLeftClick =
+        event.button === 0 &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !event.altKey;
+
+      if (
+        route &&
+        isPlainLeftClick &&
+        !link.hasAttribute("download") &&
+        (!link.target || link.target === "_self")
+      ) {
+        event.preventDefault();
+        startTransition(() => navigate(route.path));
+        window.scrollTo({ top: 0, behavior: "instant" });
+        return;
+      }
+
       const burger = event.target.closest("[data-js-header-burger-button]");
       if (burger) {
         const overlay = document.querySelector("[data-js-header-overlay]");
@@ -102,10 +140,36 @@ export default function usePageInteractions() {
       }
     };
 
+    const preloadLinkedRoute = (event) => {
+      const link = event.target.closest("a[href]");
+      const route = link
+        ? resolveInternalRoute(link.getAttribute("href"))
+        : null;
+      const currentRoute = resolveInternalRoute(location.pathname);
+      const isEligible =
+        route &&
+        route.path !== currentRoute?.path &&
+        !link.hasAttribute("download") &&
+        (!link.target || link.target === "_self") &&
+        !prefetchedRoutes.has(route.path);
+
+      if (isEligible) {
+        prefetchedRoutes.add(route.path);
+        void route.preload().catch(() => prefetchedRoutes.delete(route.path));
+      }
+    };
+
     document.addEventListener("click", onClick);
+    document.addEventListener("pointerover", preloadLinkedRoute, {
+      passive: true,
+    });
+    document.addEventListener("focusin", preloadLinkedRoute);
     return () => {
+      isDisposed = true;
       document.removeEventListener("click", onClick);
+      document.removeEventListener("pointerover", preloadLinkedRoute);
+      document.removeEventListener("focusin", preloadLinkedRoute);
       masks.forEach((mask) => mask.destroy());
     };
-  }, []);
+  }, [location.pathname, navigate]);
 }
