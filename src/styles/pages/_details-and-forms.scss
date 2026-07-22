@@ -305,7 +305,7 @@
   width: var(--size);
   height: var(--size);
   content: "";
-  background: url(../../icons/arrow-down_white.svg) center/contain no-repeat;
+  background: url(/icons/arrow-down_white.svg) center/contain no-repeat;
   transition-duration: var(--transition-duration);
 }
 @media (width <= 90.06125rem) {

@@ -37,6 +37,6 @@ SCSS is split without redesigning the interface:
 - `src/styles/components` — shared shell, cards, and reusable content blocks
 - `src/styles/pages` — page-specific news, media, article, and form blocks
 
-## Source asset note
+## Assets
 
-The provided tutorial snapshot did not include several assets referenced by its original HTML/CSS (including the logo, some icons, avatars, and illustrations). Existing paths remain unchanged so the missing originals can be restored under `public/images` and `public/icons` without code or layout changes. The intended Inter and Kumbh Sans font files were restored from their open-source Fontsource packages, with license texts stored beside the font files. All assets present in the snapshot are served from `public` and included in the production build.
+Images and icons are served from `public/images` and `public/icons` through root-relative URLs. An automated asset test verifies that every referenced image, icon, font, and video exists. The Inter and Kumbh Sans font files come from their open-source Fontsource packages, with license texts stored beside the font files.

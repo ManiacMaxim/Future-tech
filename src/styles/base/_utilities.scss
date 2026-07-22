@@ -79,7 +79,7 @@
   translate: 0 -50%;
   content: "";
   right: 0;
-  background: url(../../icons/Icon-arrow-bg.svg) center no-repeat var(--color-accent);
+  background: url(/icons/Icon-arrow-bg.svg) center no-repeat var(--color-accent);
   border-radius: 50%;
 }
 
@@ -135,13 +135,13 @@
   }
 }
 .icon--yellow-arrow::after {
-  background-image: url(../../icons/link-arrow.svg);
+  background-image: url(/icons/link-arrow.svg);
 }
 .icon--yellow-eye::after {
-  background-image: url(../../icons/yellow-eye.png);
+  background-image: url(/icons/yellow-eye.png);
 }
 .icon--gray-arrow-down::after {
-  background-image: url(../../icons/arrow-gray-down.png);
+  background-image: url(/icons/arrow-gray-down.png);
 }
 
 .logo {
