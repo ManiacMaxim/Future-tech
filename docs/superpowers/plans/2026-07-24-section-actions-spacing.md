@@ -13,6 +13,7 @@
 ### Task 1: Correct the section action containers
 
 **Files:**
+
 - Modify: `src/content/home.html:238`
 - Modify: `src/content/home.html:741`
 
@@ -26,13 +27,13 @@ Expected: two matches.
 Replace both instances:
 
 ```html
-<div class="sections__actions">
+<div class="sections__actions"></div>
 ```
 
 with:
 
 ```html
-<div class="section__actions">
+<div class="section__actions"></div>
 ```
 
 - [ ] **Step 3: Verify the incorrect class is gone**
@@ -43,6 +44,7 @@ Expected: no matches.
 ### Task 2: Set and verify the spacing
 
 **Files:**
+
 - Modify: `src/styles/components/_content.scss:308`
 
 - [ ] **Step 1: Set the exact desktop column gap**

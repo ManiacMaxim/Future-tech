@@ -32,6 +32,26 @@ export const createParseOptions = ({ eagerImageCount = 0 } = {}) => {
         );
       }
 
+      if (node.name === "a") {
+        const props = attributesToProps(node.attribs);
+        const isLogo = node.attribs.class
+          ?.split(/\s+/)
+          .includes("header__logo");
+        const opensNewTab = node.attribs.target === "_blank";
+
+        if (isLogo || opensNewTab) {
+          return (
+            <a
+              {...props}
+              aria-label={isLogo ? "FutureTech home" : props["aria-label"]}
+              rel={opensNewTab ? "noopener noreferrer" : props.rel}
+            >
+              {domToReact(node.children, options)}
+            </a>
+          );
+        }
+      }
+
       return undefined;
     },
   };

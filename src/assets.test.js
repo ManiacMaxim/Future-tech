@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { globSync } from "node:fs";
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
 const sourceFiles = globSync("src/{content,styles}/**/*.{html,scss}");
@@ -31,5 +32,31 @@ describe("public assets", () => {
     );
 
     expect(missingAssets).toEqual([]);
+  });
+
+  it("keeps form labels and document ids valid", () => {
+    const invalidMarkup = sourceFiles
+      .filter((file) => file.endsWith(".html"))
+      .flatMap((file) => {
+        const document = new JSDOM(readFileSync(file, "utf8")).window.document;
+        const ids = [...document.querySelectorAll("[id]")].map(
+          (element) => element.id,
+        );
+        const duplicateIds = ids.filter(
+          (id, index) => ids.indexOf(id) !== index,
+        );
+        const brokenLabels = [...document.querySelectorAll("label[for]")]
+          .filter(
+            (label) =>
+              !label.htmlFor || !document.getElementById(label.htmlFor),
+          )
+          .map((label) => `label[for="${label.htmlFor}"]`);
+
+        return [...new Set([...duplicateIds, ...brokenLabels])].map(
+          (issue) => `${file}: ${issue}`,
+        );
+      });
+
+    expect(invalidMarkup).toEqual([]);
   });
 });

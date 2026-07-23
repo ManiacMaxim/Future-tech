@@ -1,26 +1,41 @@
-export const pageLoaders = {
-  home: () => import("./pages/HomePage"),
-  news: () => import("./pages/NewsPage"),
-  podcasts: () => import("./pages/PodcastsPage"),
-  resources: () => import("./pages/ResourcesPage"),
-  blog: () => import("./pages/BlogPage"),
-  contacts: () => import("./pages/ContactsPage"),
-};
+export const pageRoutes = [
+  {
+    id: "home",
+    paths: ["/", "/index.html"],
+    preload: () => import("./pages/HomePage"),
+  },
+  {
+    id: "news",
+    paths: ["/news", "/news.html"],
+    preload: () => import("./pages/NewsPage"),
+  },
+  {
+    id: "podcasts",
+    paths: ["/podcasts", "/podcasts.html"],
+    preload: () => import("./pages/PodcastsPage"),
+  },
+  {
+    id: "resources",
+    paths: ["/resources", "/resources.html"],
+    preload: () => import("./pages/ResourcesPage"),
+  },
+  {
+    id: "blog",
+    paths: ["/blog", "/blog.html"],
+    preload: () => import("./pages/BlogPage"),
+  },
+  {
+    id: "contacts",
+    paths: ["/contacts", "/contacts.html"],
+    preload: () => import("./pages/ContactsPage"),
+  },
+];
 
-const internalRoutes = new Map([
-  ["/", { path: "/", preload: pageLoaders.home }],
-  ["/index.html", { path: "/", preload: pageLoaders.home }],
-  ["/news", { path: "/news", preload: pageLoaders.news }],
-  ["/news.html", { path: "/news", preload: pageLoaders.news }],
-  ["/podcasts", { path: "/podcasts", preload: pageLoaders.podcasts }],
-  ["/podcasts.html", { path: "/podcasts", preload: pageLoaders.podcasts }],
-  ["/resources", { path: "/resources", preload: pageLoaders.resources }],
-  ["/resources.html", { path: "/resources", preload: pageLoaders.resources }],
-  ["/blog", { path: "/blog", preload: pageLoaders.blog }],
-  ["/blog.html", { path: "/blog", preload: pageLoaders.blog }],
-  ["/contacts", { path: "/contacts", preload: pageLoaders.contacts }],
-  ["/contacts.html", { path: "/contacts", preload: pageLoaders.contacts }],
-]);
+const internalRoutes = new Map(
+  pageRoutes.flatMap(({ paths, preload }) =>
+    paths.map((pathname) => [pathname, { path: paths[0], preload }]),
+  ),
+);
 
 export const resolveInternalRoute = (href) => {
   if (!href) return null;

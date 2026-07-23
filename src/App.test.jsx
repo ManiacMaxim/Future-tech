@@ -61,6 +61,36 @@ describe("FutureTech application shell", () => {
     ).toHaveAttribute("loading", "lazy");
   });
 
+  it("gives the logo link an accessible name and secures new-tab links", async () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    const logo = await screen.findByRole("link", { name: "FutureTech home" });
+    const newTabLink = document.querySelector('a[target="_blank"]');
+
+    expect(logo).toHaveClass("header__logo");
+    expect(newTabLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("supports arrow-key navigation between tabs", async () => {
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    const activeTab = await screen.findByRole("tab", { name: "All" });
+    activeTab.focus();
+    fireEvent.keyDown(activeTab, { key: "ArrowRight" });
+
+    const nextTab = screen.getByRole("tab", { name: "Quantum Computing" });
+    expect(nextTab).toHaveAttribute("aria-selected", "true");
+    expect(nextTab).toHaveFocus();
+  });
+
   it("defers below-the-fold images and video data", async () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={["/"]}>

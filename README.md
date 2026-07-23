@@ -5,7 +5,7 @@ FutureTech is a responsive multi-page editorial website about artificial intelli
 ## Stack
 
 - React 19 and React Router
-- Vite 7
+- Vite 8
 - SCSS organized into foundation, shared component, and page partials
 - Vitest and Testing Library
 - ESLint and Prettier
@@ -17,17 +17,26 @@ npm install
 npm run dev
 ```
 
-Production checks:
+Node.js 22.13 LTS or newer supported LTS is required. Run the same quality gate used by CI:
 
 ```bash
-npm test
-npm run lint
-npm run build
+npm run check
 ```
 
 Large source images can be regenerated as optimized WebP assets with `npm run optimize:images`.
 
-The included `vercel.json` provides the SPA fallback required for direct visits to every React route.
+The included `vercel.json` provides the SPA fallback required for direct visits to every React route, baseline security headers, and immutable caching for fingerprinted build assets.
+
+## Vercel deployment
+
+Import the repository into Vercel and keep the detected Vite defaults:
+
+- Build command: `npm run build`
+- Output directory: `dist`
+- Install command: `npm install`
+- Node.js: `22.x`
+
+Direct visits to clean and legacy routes are covered by the SPA rewrite. Vercel deployments should only be promoted after the CI quality job passes.
 
 ## Architecture
 

@@ -177,6 +177,29 @@ export default function usePageInteractions() {
     };
 
     const onKeyDown = (event) => {
+      const tabButton = event.target.closest("[data-js-tabs-button]");
+      if (tabButton) {
+        const tabs = tabButton.closest("[data-js-tabs]");
+        const buttons = [...tabs.querySelectorAll("[data-js-tabs-button]")];
+        const currentIndex = buttons.indexOf(tabButton);
+        const nextIndexByKey = {
+          ArrowRight: (currentIndex + 1) % buttons.length,
+          ArrowDown: (currentIndex + 1) % buttons.length,
+          ArrowLeft: (currentIndex - 1 + buttons.length) % buttons.length,
+          ArrowUp: (currentIndex - 1 + buttons.length) % buttons.length,
+          Home: 0,
+          End: buttons.length - 1,
+        };
+        const nextIndex = nextIndexByKey[event.key];
+
+        if (nextIndex !== undefined) {
+          event.preventDefault();
+          toggleTabs(buttons[nextIndex]);
+          buttons[nextIndex].focus();
+        }
+        return;
+      }
+
       const button = event.target.closest("[data-js-select-button]");
       if (!button) return;
 
