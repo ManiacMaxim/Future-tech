@@ -24,6 +24,50 @@ const toggleTabs = (button) => {
   });
 };
 
+const getSelectParts = (select) => ({
+  button: select.querySelector("[data-js-select-button]"),
+  control: select.querySelector("[data-js-select-original-control]"),
+  dropdown: select.querySelector("[data-js-select-dropdown]"),
+  options: [...select.querySelectorAll("[data-js-select-option]")],
+  value: select.querySelector("[data-js-select-value]"),
+});
+
+const setSelectExpanded = (select, expanded) => {
+  const { button, dropdown } = getSelectParts(select);
+  button.setAttribute("aria-expanded", String(expanded));
+  button.classList.toggle("is-expanded", expanded);
+  dropdown.hidden = !expanded;
+  select.classList.toggle("is-expanded", expanded);
+};
+
+const setActiveSelectOption = (select, index) => {
+  const { button, options } = getSelectParts(select);
+  const normalizedIndex = (index + options.length) % options.length;
+
+  options.forEach((option, optionIndex) => {
+    option.classList.toggle("is-active", optionIndex === normalizedIndex);
+  });
+  button.setAttribute("aria-activedescendant", options[normalizedIndex].id);
+  options[normalizedIndex].scrollIntoView?.({ block: "nearest" });
+  return normalizedIndex;
+};
+
+const selectOption = (select, option) => {
+  const { button, control, options, value } = getSelectParts(select);
+  const selectedValue = option.dataset.value ?? option.textContent.trim();
+
+  control.value = selectedValue;
+  value.textContent = option.textContent.trim();
+  options.forEach((item) => {
+    const isSelected = item === option;
+    item.classList.toggle("is-selected", isSelected);
+    item.setAttribute("aria-selected", String(isSelected));
+  });
+  button.setAttribute("aria-activedescendant", option.id);
+  setSelectExpanded(select, false);
+  control.dispatchEvent(new Event("change", { bubbles: true }));
+};
+
 export default function usePageInteractions() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,6 +94,27 @@ export default function usePageInteractions() {
     }
 
     const onClick = (event) => {
+      const option = event.target.closest("[data-js-select-option]");
+      if (option) {
+        const select = option.closest("[data-js-select]");
+        selectOption(select, option);
+        select.querySelector("[data-js-select-button]").focus();
+        return;
+      }
+
+      const selectButton = event.target.closest("[data-js-select-button]");
+      if (selectButton) {
+        const select = selectButton.closest("[data-js-select]");
+        const isExpanded =
+          selectButton.getAttribute("aria-expanded") === "true";
+        setSelectExpanded(select, !isExpanded);
+        return;
+      }
+
+      document
+        .querySelectorAll("[data-js-select].is-expanded")
+        .forEach((select) => setSelectExpanded(select, false));
+
       const link = event.target.closest("a[href]");
       const route = link
         ? resolveInternalRoute(link.getAttribute("href"))
@@ -109,34 +174,55 @@ export default function usePageInteractions() {
           .classList.add("is-expanded");
         expandButton.remove();
       }
+    };
 
-      const selectButton = event.target.closest("[data-js-select-button]");
-      if (selectButton) {
-        const select = selectButton.closest("[data-js-select]");
-        const dropdown = select.querySelector("[data-js-select-dropdown]");
-        const expanded = selectButton.classList.toggle("is-expanded");
-        dropdown.classList.toggle("is-expanded", expanded);
-        selectButton.setAttribute("aria-expanded", String(expanded));
+    const onKeyDown = (event) => {
+      const button = event.target.closest("[data-js-select-button]");
+      if (!button) return;
+
+      const select = button.closest("[data-js-select]");
+      const { options } = getSelectParts(select);
+      const currentIndex = Math.max(
+        0,
+        options.findIndex(
+          (option) =>
+            option.id === button.getAttribute("aria-activedescendant"),
+        ),
+      );
+
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectExpanded(select, true);
+        setActiveSelectOption(
+          select,
+          currentIndex + (event.key === "ArrowDown" ? 1 : -1),
+        );
+        return;
       }
 
-      const option = event.target.closest("[data-js-select-option]");
-      if (option) {
-        const select = option.closest("[data-js-select]");
-        const control = select.querySelector(
-          "[data-js-select-original-control]",
+      if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        setSelectExpanded(select, true);
+        setActiveSelectOption(
+          select,
+          event.key === "Home" ? 0 : options.length - 1,
         );
-        const button = select.querySelector("[data-js-select-button]");
-        const dropdown = select.querySelector("[data-js-select-dropdown]");
-        control.value = option.dataset.value ?? option.textContent.trim();
-        button.firstElementChild.textContent = option.textContent.trim();
-        select.querySelectorAll("[data-js-select-option]").forEach((item) => {
-          const isSelected = item === option;
-          item.classList.toggle("is-selected", isSelected);
-          item.setAttribute("aria-selected", String(isSelected));
-        });
-        button.classList.remove("is-expanded");
-        button.setAttribute("aria-expanded", "false");
-        dropdown.classList.remove("is-expanded");
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (button.getAttribute("aria-expanded") === "true") {
+          selectOption(select, options[currentIndex]);
+        } else {
+          setSelectExpanded(select, true);
+        }
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectExpanded(select, false);
       }
     };
 
@@ -160,6 +246,7 @@ export default function usePageInteractions() {
     };
 
     document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerover", preloadLinkedRoute, {
       passive: true,
     });
@@ -167,6 +254,7 @@ export default function usePageInteractions() {
     return () => {
       isDisposed = true;
       document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerover", preloadLinkedRoute);
       document.removeEventListener("focusin", preloadLinkedRoute);
       masks.forEach((mask) => mask.destroy());

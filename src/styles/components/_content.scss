@@ -308,8 +308,8 @@
 .section__header-inner:has(.section__actions) {
   display: grid;
   align-items: center;
-  -moz-column-gap: 1rem;
-       column-gap: 1rem;
+  -moz-column-gap: 15px;
+       column-gap: 15px;
 }
 @media (width >= 47.99875rem) {
   .section__header-inner:has(.section__actions) {
@@ -452,6 +452,9 @@
 }
 .card__grid--3-cols {
   gap: clamp(1.25rem, 0.7720588235rem + 1.9607843137vw, 3.125rem) 1.25rem;
+}
+.card__grid--metrics > .tile .card__cell-description {
+  margin-top: auto;
 }
 @media (width <= 90.06125rem) {
   .card__grid--3-cols {
